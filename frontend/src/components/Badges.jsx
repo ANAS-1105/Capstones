@@ -4,7 +4,7 @@ import { Award, Lock, ShieldCheck, Flame, Compass, Star, Sunset } from "lucide-r
 export default function Badges({ token, showNotification }) {
   const [unlockedBadges, setUnlockedBadges] = useState([]);
   const [isLoading, setIsLoading] = useState(true);
-  const API_URL = "http://127.0.0.1:8000/api";
+  const API_URL = `http://${window.location.hostname}:8000/api`;
 
   const fetchBadges = async () => {
     setIsLoading(true);
