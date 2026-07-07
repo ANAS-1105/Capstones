@@ -139,9 +139,9 @@ export default function App() {
   return (
     <div className="min-h-screen bg-white dark:bg-gray-950 text-gray-900 dark:text-gray-100 transition duration-300 relative overflow-hidden flex flex-col">
       
-      {/* Decorative Blur Background Blobs */}
-      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full bg-primary-400/10 dark:bg-primary-500/5 blur-[120px] pointer-events-none" />
-      <div className="absolute bottom-[-10%] right-[-10%] w-[45%] h-[45%] rounded-full bg-emerald-400/10 dark:bg-emerald-500/5 blur-[120px] pointer-events-none" />
+      {/* Decorative Blur Background Blobs (Only shown in Dark Mode for high contrast) */}
+      <div className="absolute top-[-10%] left-[-10%] w-[40%] h-[40%] rounded-full hidden dark:block bg-primary-500/5 blur-[120px] pointer-events-none" />
+      <div className="absolute bottom-[-10%] right-[-10%] w-[45%] h-[45%] rounded-full hidden dark:block bg-emerald-500/5 blur-[120px] pointer-events-none" />
 
       {/* Notification Toast */}
       {notification && (
@@ -259,7 +259,7 @@ export default function App() {
         /* --- CORE APP DASHBOARD --- */
         <>
           {/* Header Navigation */}
-          <header className="sticky top-0 z-40 bg-white/70 dark:bg-gray-950/70 backdrop-blur-md border-b border-slate-200/80 dark:border-gray-900/80 transition duration-300">
+          <header className="sticky top-0 z-40 bg-white/70 dark:bg-gray-950/70 backdrop-blur-md border-b border-gray-100 dark:border-gray-900/80 transition duration-300">
             <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
               <div className="flex items-center justify-between h-16">
                 
@@ -279,7 +279,7 @@ export default function App() {
                     onClick={() => setActiveView("dashboard")}
                     className={`px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition ${
                       activeView === "dashboard"
-                        ? "bg-primary-50 text-primary-600 dark:bg-primary-950/30 dark:text-primary-400"
+                        ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white"
                         : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-900"
                     }`}
                   >
@@ -290,7 +290,7 @@ export default function App() {
                     onClick={() => setActiveView("analytics")}
                     className={`px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition ${
                       activeView === "analytics"
-                        ? "bg-primary-50 text-primary-600 dark:bg-primary-950/30 dark:text-primary-400"
+                        ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white"
                         : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-900"
                     }`}
                   >
@@ -301,7 +301,7 @@ export default function App() {
                     onClick={() => setActiveView("badges")}
                     className={`px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition ${
                       activeView === "badges"
-                        ? "bg-primary-50 text-primary-600 dark:bg-primary-950/30 dark:text-primary-400"
+                        ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white"
                         : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-900"
                     }`}
                   >
@@ -357,7 +357,7 @@ export default function App() {
 
             {/* Mobile Navigation Drawer */}
             {mobileMenuOpen && (
-              <div className="md:hidden border-t border-slate-200 dark:border-gray-900 bg-white dark:bg-gray-950 px-4 py-3 space-y-1">
+              <div className="md:hidden border-t border-gray-100 bg-white dark:bg-gray-950 px-4 py-3 space-y-1">
                 <button
                   onClick={() => { setActiveView("dashboard"); setMobileMenuOpen(false); }}
                   className="w-full px-4 py-2.5 rounded-xl text-left text-sm font-semibold flex items-center gap-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900"
@@ -398,7 +398,7 @@ export default function App() {
           </main>
 
           {/* Footer */}
-          <footer className="py-6 border-t border-slate-200/50 dark:border-gray-900/50 text-center text-xs text-gray-400">
+          <footer className="py-6 border-t border-gray-100/50 dark:border-gray-900/50 text-center text-xs text-gray-400">
             &copy; {new Date().getFullYear()} MindMentor AI. Designed with empathy for student wellness.
           </footer>
         </>
