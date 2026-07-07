@@ -14,6 +14,10 @@ export default function Dashboard({ token, showNotification }) {
   const [newGoal, setNewGoal] = useState("");
   const [isAddingGoal, setIsAddingGoal] = useState(false);
   
+  // Voice Synthesis State
+  const [voices, setVoices] = useState([]);
+  const [selectedVoice, setSelectedVoice] = useState("");
+  
   // Quick Sample Prompts for ease of testing
   const samplePrompts = [
     { text: "I have three assignments due this week. I keep trying to study, but I can't focus and I feel overwhelmed.", label: "Stressed" },
@@ -42,6 +46,30 @@ export default function Dashboard({ token, showNotification }) {
   useEffect(() => {
     fetchGoals();
   }, [token]);
+
+  // Load and configure system speech voices
+  useEffect(() => {
+    if ("speechSynthesis" in window) {
+      const loadVoices = () => {
+        const availableVoices = window.speechSynthesis.getVoices();
+        // Filter to English languages only
+        const englishVoices = availableVoices.filter(v => v.lang.startsWith("en"));
+        setVoices(englishVoices);
+        
+        // Auto-select google voice or zira or primary default
+        const defaultVoice = englishVoices.find(v => 
+          v.name.includes("Google") || v.name.includes("Natural") || v.name.includes("Zira") || v.name.includes("David")
+        ) || englishVoices[0];
+        
+        if (defaultVoice) {
+          setSelectedVoice(defaultVoice.name);
+        }
+      };
+
+      loadVoices();
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+  }, []);
 
   // Handle Journal Submission
   const handleAnalyze = async (textToAnalyze = journalText) => {
@@ -142,10 +170,25 @@ export default function Dashboard({ token, showNotification }) {
     }
   };
 
-  // Text-to-speech option for simulated support
+  // Text-to-speech option with customized friendly settings
   const handleSpeakText = (text) => {
     if ('speechSynthesis' in window) {
+      // Cancel active sounds first
+      window.speechSynthesis.cancel();
+      
       const utterance = new SpeechSynthesisUtterance(text);
+      
+      if (selectedVoice) {
+        const voiceObj = voices.find(v => v.name === selectedVoice);
+        if (voiceObj) {
+          utterance.voice = voiceObj;
+        }
+      }
+      
+      // Calmer speaking rate and warm pitch to sound professional and supportive
+      utterance.rate = 0.85; 
+      utterance.pitch = 1.05;
+      
       window.speechSynthesis.speak(utterance);
     } else {
       showNotification("Text-to-speech is not supported in this browser.", "error");
@@ -328,13 +371,28 @@ export default function Dashboard({ token, showNotification }) {
                   </div>
                 </div>
                 
-                {/* Motivational Quote Button / Text-to-speech */}
-                <button
-                  onClick={() => handleSpeakText(analysisResult.study_plan.motivational_quote)}
-                  className="px-4 py-2 rounded-xl bg-white/20 dark:bg-black/20 hover:bg-white/30 dark:hover:bg-black/30 border border-white/30 dark:border-black/10 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider transition"
-                >
-                  <Volume2 className="w-4 h-4" /> Listen Quote
-                </button>
+                {/* Motivational Quote Button & Voice Selection Panel */}
+                <div className="flex flex-wrap items-center gap-2">
+                  {voices.length > 0 && (
+                    <select
+                      value={selectedVoice}
+                      onChange={(e) => setSelectedVoice(e.target.value)}
+                      className="text-xs px-3 py-1.5 rounded-xl bg-white/20 dark:bg-black/20 hover:bg-white/30 dark:hover:bg-black/30 border border-white/20 dark:border-black/10 text-gray-950 dark:text-white font-medium focus:outline-none transition max-w-[170px] cursor-pointer"
+                    >
+                      {voices.map((voice, idx) => (
+                        <option key={idx} value={voice.name} className="text-gray-900 bg-white dark:bg-gray-950">
+                          {voice.name.replace("Microsoft", "").replace("Google", "").replace("English", "").trim()}
+                        </option>
+                      ))}
+                    </select>
+                  )}
+                  <button
+                    onClick={() => handleSpeakText(analysisResult.study_plan.motivational_quote)}
+                    className="px-4 py-2 rounded-xl bg-white/20 dark:bg-black/20 hover:bg-white/30 dark:hover:bg-black/30 border border-white/30 dark:border-black/10 flex items-center gap-2 text-xs font-semibold uppercase tracking-wider transition cursor-pointer"
+                  >
+                    <Volume2 className="w-4 h-4" /> Listen Quote
+                  </button>
+                </div>
               </div>
 
               {/* Study Plan Cards Grid */}
