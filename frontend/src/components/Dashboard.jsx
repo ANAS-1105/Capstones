@@ -256,7 +256,7 @@ export default function Dashboard({ token, showNotification }) {
                 onChange={(e) => setJournalText(e.target.value)}
                 placeholder="Write your study mood... (e.g., I'm feeling really stressed because of the maths exam tomorrow and I keep losing focus.)"
                 rows={5}
-                className="w-full rounded-2xl border border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/50 p-4 pr-12 text-sm text-gray-950 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition"
+                className="w-full rounded-2xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/80 p-4 pr-12 text-sm text-gray-950 dark:text-white placeholder-gray-400 dark:placeholder-gray-600 focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition"
               />
               
               {/* Mic Icon for voice-to-text simulation */}
@@ -448,7 +448,7 @@ export default function Dashboard({ token, showNotification }) {
                 value={newGoal}
                 onChange={(e) => setNewGoal(e.target.value)}
                 placeholder="Enter study goal..."
-                className="flex-1 text-sm rounded-xl border border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/50 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
+                className="flex-1 text-sm rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/80 px-3 py-2 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500"
               />
               <button
                 type="submit"

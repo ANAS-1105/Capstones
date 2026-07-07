@@ -189,7 +189,7 @@ export default function App() {
                       placeholder="John Doe"
                       value={authName}
                       onChange={(e) => setAuthName(e.target.value)}
-                      className="w-full text-sm rounded-xl border border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/50 pl-10 pr-4 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition"
+                      className="w-full text-sm rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/80 pl-10 pr-4 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition"
                     />
                   </div>
                 </div>
@@ -204,7 +204,7 @@ export default function App() {
                     placeholder="student@university.edu"
                     value={authEmail}
                     onChange={(e) => setAuthEmail(e.target.value)}
-                    className="w-full text-sm rounded-xl border border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/50 pl-10 pr-4 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition"
+                    className="w-full text-sm rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/80 pl-10 pr-4 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition"
                   />
                 </div>
               </div>
@@ -218,7 +218,7 @@ export default function App() {
                     placeholder="••••••••"
                     value={authPassword}
                     onChange={(e) => setAuthPassword(e.target.value)}
-                    className="w-full text-sm rounded-xl border border-gray-200 dark:border-gray-800 bg-white/50 dark:bg-gray-900/50 pl-10 pr-4 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition"
+                    className="w-full text-sm rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/80 pl-10 pr-4 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition"
                   />
                 </div>
               </div>
