@@ -4,6 +4,86 @@ import {
   Mic, Clock, AlertTriangle, Coffee, BookOpen, Heart, RefreshCw, Volume2 
 } from "lucide-react";
 
+const METHOD_EXPLAINERS = {
+  // Learning Methods
+  "Feynman Technique & Practice Quizzes": {
+    title: "Feynman Technique",
+    desc: "Explain the topic aloud in very simple terms, as if teaching a 10-year-old child. This exposes gaps in your memory, which you review in your textbooks, followed by testing yourself with practice questions."
+  },
+  "Pomodoro Technique (Single Task Focus)": {
+    title: "Pomodoro Technique",
+    desc: "Set a timer. Work with absolute focus on a single task for 25 minutes, then stop. Take a 10-minute restorative break. Repeat this cycle to prevent mental burnout."
+  },
+  "Low-Intensity Reading / Flashcards": {
+    title: "Low-Intensity Active Recall",
+    desc: "Due to exhaustion, avoid long lectures. Instead, look at small chunks of text or flashcards. Test your memory briefly without pushing your brain too hard."
+  },
+  "Mind Mapping & Visual Video Tutorials": {
+    title: "Mind Mapping",
+    desc: "Draw a central topic on a page, and branch it into sub-concepts using colors and drawings. Then, watch a simple 5-minute video tutorial to visually connect the terms."
+  },
+  "SQ3R Method (Survey, Question, Read, Recite, Review)": {
+    title: "SQ3R Method",
+    desc: "Survey (scan headings), Question (turn headings into questions), Read (look for answers), Recite (summarize key paragraphs out loud), and Review (quiz yourself on the concepts)."
+  },
+  "Practice Quizzes (low stakes) & Verbal Recall": {
+    title: "Practice Quizzing",
+    desc: "Close your notes and write down everything you remember, or answer mock questions. Forcing your brain to retrieve answers builds stronger neural pathways."
+  },
+  
+  // Revision schedules
+  "Standard Active Recall (1-day, 3-day, 7-day review)": {
+    title: "Standard Active Recall",
+    desc: "Review your notes 1 day after learning, then 3 days, and then 7 days later. This timing forces information into your long-term memory."
+  },
+  "Light summary review cards": {
+    title: "Light Summary Review",
+    desc: "Do not read full textbooks. Read a 1-page cheat sheet or bullet points to refresh your mind without building stress."
+  },
+  "No heavy revision today, prioritize recovery": {
+    title: "Prioritize Recovery",
+    desc: "Close all textbooks. Your brain is currently overloaded. Give it a full day off to rest, sleep, and rebuild cognitive capacity."
+  },
+  "Immediate review after clarifying basic terms": {
+    title: "Immediate Review",
+    desc: "As soon as you find a simple definition for a confusing term, review the chapter immediately so the new knowledge sets in."
+  },
+  "Spaced Repetition System (SRS) review": {
+    title: "Spaced Repetition (SRS)",
+    desc: "Study cards using software or folders. Cards you get wrong are reviewed frequently; cards you get right are pushed days away."
+  },
+  "Daily revision summary cards": {
+    title: "Daily Summary Cards",
+    desc: "Spend just 5 minutes before bed scanning a quick summary card of today's key ideas to strengthen retention."
+  },
+
+  // Relaxation Methods
+  "Victory lap walk or dynamic stretching": {
+    title: "Victory Lap Walk",
+    desc: "Walk around the room or stretch your shoulders, neck, and back dynamically for 5 minutes. Moving your body spikes oxygen flow to your brain."
+  },
+  "4-7-8 Breathing Exercise (Inhale 4s, Hold 7s, Exhale 8s)": {
+    title: "4-7-8 Breathing",
+    desc: "Inhale quietly through your nose for 4 seconds. Hold your breath for 7 seconds. Exhale audibly through your mouth for 8 seconds. Repeat 4 times to stop panic."
+  },
+  "Progressive Muscle Relaxation or a 20-minute power nap": {
+    title: "Progressive Muscle Relaxation",
+    desc: "Tense a muscle group (like your shoulders) for 5 seconds, then release it completely. Repeat for all muscles or take a quick 20-minute power nap."
+  },
+  "Eye-strain relief exercises and a cool glass of water": {
+    title: "Eye-Strain Relief",
+    desc: "Look away from screens at an object 20 feet away for 20 seconds. Drink a cool glass of water to refresh your body."
+  },
+  "Mindful listening to a calming low-fi track": {
+    title: "Mindful Listening",
+    desc: "Close your eyes, put on a calming background track, and focus entirely on the instruments for 3 minutes to silence racing academic thoughts."
+  },
+  "5-4-3-2-1 Grounding Technique (Name 5 sights, 4 feels, 3 sounds...)": {
+    title: "5-4-3-2-1 Grounding",
+    desc: "Acknowledge 5 things you see, 4 you feel physically, 3 you hear, 2 you smell, and 1 you taste. This grounds your mind back to safety."
+  }
+};
+
 export default function Dashboard({ token, showNotification }) {
   const [journalText, setJournalText] = useState("");
   const [isAnalyzing, setIsAnalyzing] = useState(false);
@@ -383,6 +463,51 @@ export default function Dashboard({ token, showNotification }) {
                         {analysisResult.study_plan.productivity_score}%
                       </div>
                     </div>
+                  </div>
+                </div>
+
+                {/* Method Explainer Card */}
+                <div className="glass-card rounded-3xl p-6 border md:col-span-2 space-y-4">
+                  <h4 className="text-md font-bold text-gray-900 dark:text-white font-outfit flex items-center gap-2">
+                    <BookOpen className="w-5 h-5 text-indigo-500" />
+                    How to Apply Your Study Plan (Decoded)
+                  </h4>
+                  <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+                    {/* Learn method explain */}
+                    {METHOD_EXPLAINERS[analysisResult.study_plan.learning_method] && (
+                      <div className="space-y-1">
+                        <div className="text-xs font-bold text-indigo-600 dark:text-indigo-400 uppercase tracking-wider">
+                          📚 {METHOD_EXPLAINERS[analysisResult.study_plan.learning_method].title}
+                        </div>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mt-1">
+                          {METHOD_EXPLAINERS[analysisResult.study_plan.learning_method].desc}
+                        </p>
+                      </div>
+                    )}
+                    
+                    {/* Revision method explain */}
+                    {METHOD_EXPLAINERS[analysisResult.study_plan.revision_schedule] && (
+                      <div className="space-y-1">
+                        <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 uppercase tracking-wider">
+                          🔄 {METHOD_EXPLAINERS[analysisResult.study_plan.revision_schedule].title}
+                        </div>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mt-1">
+                          {METHOD_EXPLAINERS[analysisResult.study_plan.revision_schedule].desc}
+                        </p>
+                      </div>
+                    )}
+
+                    {/* Relaxation method explain */}
+                    {METHOD_EXPLAINERS[analysisResult.study_plan.relaxation_exercise] && (
+                      <div className="space-y-1">
+                        <div className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider">
+                          😌 {METHOD_EXPLAINERS[analysisResult.study_plan.relaxation_exercise].title}
+                        </div>
+                        <p className="text-xs text-gray-600 dark:text-gray-400 leading-relaxed mt-1">
+                          {METHOD_EXPLAINERS[analysisResult.study_plan.relaxation_exercise].desc}
+                        </p>
+                      </div>
+                    )}
                   </div>
                 </div>
 
