@@ -115,7 +115,7 @@ export default function Dashboard({ token, showNotification }) {
     { text: "I am so tired. I have no energy to study and I just want to sleep for days.", label: "Burned Out" }
   ];
 
-  const API_URL = `http://${window.location.hostname}:8000/api`;
+  const API_URL = import.meta.env.VITE_API_URL || `http://${window.location.hostname}:8000/api`;
 
   // Fetch Goals
   const fetchGoals = async () => {
