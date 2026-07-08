@@ -1,12 +1,13 @@
 import React, { useState, useEffect } from "react";
 import { 
   Brain, LayoutDashboard, BarChart3, Award, LogOut, Sun, Moon, 
-  Menu, X, Lock, Mail, User, ShieldAlert, Info 
+  Menu, X, Lock, Mail, User, ShieldAlert, Info, Sliders 
 } from "lucide-react";
 import Dashboard from "./components/Dashboard";
 import Analytics from "./components/Analytics";
 import Badges from "./components/Badges";
 import About from "./components/About";
+import Simulator from "./components/Simulator";
 
 export default function App() {
   const [token, setToken] = useState(localStorage.getItem("token") || "");
@@ -310,6 +311,17 @@ export default function App() {
                     Badges
                   </button>
                   <button
+                    onClick={() => setActiveView("simulator")}
+                    className={`px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition ${
+                      activeView === "simulator"
+                        ? "bg-gray-100 text-gray-900 dark:bg-gray-800 dark:text-white"
+                        : "text-gray-600 hover:text-gray-900 dark:text-gray-400 dark:hover:text-white hover:bg-gray-50 dark:hover:bg-gray-900"
+                    }`}
+                  >
+                    <Sliders className="w-4 h-4" />
+                    Simulator
+                  </button>
+                  <button
                     onClick={() => setActiveView("about")}
                     className={`px-4 py-2 rounded-xl text-sm font-semibold flex items-center gap-2 transition ${
                       activeView === "about"
@@ -391,6 +403,13 @@ export default function App() {
                   <Award className="w-5 h-5 text-gray-400" />
                   Badges
                 </button>
+                 <button
+                   onClick={() => { setActiveView("simulator"); setMobileMenuOpen(false); }}
+                   className="w-full px-4 py-2.5 rounded-xl text-left text-sm font-semibold flex items-center gap-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900"
+                 >
+                   <Sliders className="w-5 h-5 text-gray-400" />
+                   Simulator
+                 </button>
                 <button
                   onClick={() => { setActiveView("about"); setMobileMenuOpen(false); }}
                   className="w-full px-4 py-2.5 rounded-xl text-left text-sm font-semibold flex items-center gap-3 text-gray-700 dark:text-gray-300 hover:bg-gray-50 dark:hover:bg-gray-900"
@@ -414,6 +433,7 @@ export default function App() {
              {activeView === "dashboard" && <Dashboard token={token} showNotification={showNotification} />}
             {activeView === "analytics" && <Analytics token={token} showNotification={showNotification} />}
             {activeView === "badges" && <Badges token={token} showNotification={showNotification} />}
+            {activeView === "simulator" && <Simulator />}
             {activeView === "about" && <About />}
           </main>
 

@@ -9,7 +9,8 @@ from fastapi.security import OAuth2PasswordRequestForm
 from database import db
 from schemas import (
     UserRegister, UserLogin, UserOut, Token,
-    JournalCreate, JournalOut, GoalCreate, GoalOut, GoalUpdate, AnalyticsOut
+    JournalCreate, JournalOut, GoalCreate, GoalOut, GoalUpdate, AnalyticsOut,
+    CoachProfileOut
 )
 from auth import hash_password, verify_password, create_access_token, get_current_user
 from recommendations import generate_study_plan
@@ -160,13 +161,27 @@ def get_me(current_user: dict = Depends(get_current_user)):
 @app.post("/api/analyze", response_model=JournalOut)
 def analyze_journal(entry: JournalCreate, current_user: dict = Depends(get_current_user)):
     emotion = predict_emotion(entry.text)
-    study_plan = generate_study_plan(emotion)
+    study_plan = generate_study_plan(
+        emotion=emotion,
+        hours_studied=entry.hours_studied,
+        sleep_hours=entry.sleep_hours,
+        upcoming_exams=entry.upcoming_exams,
+        mood_rating=entry.mood_rating,
+        consistency=entry.consistency,
+        distractions=entry.distractions
+    )
     
     journal_entry = {
         "text": entry.text,
         "emotion": emotion,
         "created_at": datetime.datetime.now().isoformat(),
-        "study_plan": study_plan
+        "study_plan": study_plan,
+        "hours_studied": entry.hours_studied,
+        "sleep_hours": entry.sleep_hours,
+        "upcoming_exams": entry.upcoming_exams,
+        "mood_rating": entry.mood_rating,
+        "consistency": entry.consistency,
+        "distractions": entry.distractions
     }
     
     saved_entry = db.save_journal_entry(current_user["_id"], journal_entry)
@@ -280,6 +295,174 @@ def get_analytics(current_user: dict = Depends(get_current_user)):
 def get_badges(current_user: dict = Depends(get_current_user)):
     return db.get_user_badges(current_user["_id"])
 
+@app.get("/api/coach/profile", response_model=CoachProfileOut)
+def get_coach_profile(current_user: dict = Depends(get_current_user)):
+    user_id = current_user["_id"]
+    journals = db.get_journal_entries(user_id)
+    goals = db.get_goals(user_id)
+    
+    # Baseline defaults if history is empty
+    default_dna = {
+        "learning_style": "Visual Learner (Active Recall)",
+        "best_time": "Morning",
+        "most_productive_subject": "Biology",
+        "weakest_subject": "Mathematics",
+        "most_common_emotion": "Calm",
+        "average_focus": 75.0,
+        "optimal_study_time": 45,
+        "ideal_break": 10
+    }
+    
+    default_future = {
+        "current_progress": 62.0,
+        "predicted_progress_30_days": 83.0,
+        "expected_stress_reduction": 25.0,
+        "focus_improvement": "Moderate Improvement",
+        "exam_readiness": "High"
+    }
+    
+    default_insights = [
+        "Consistent habits build better results. Try setting a fixed study slot tomorrow.",
+        "Your focus score peaks after 7+ hours of sleep. Prioritize rest tonight."
+    ]
+
+    if not journals:
+        # Calculate current progress from goals if any exist
+        if goals:
+            completed = sum(1 for g in goals if g["completed"])
+            current_pct = (completed / len(goals)) * 100
+            default_future["current_progress"] = round(current_pct, 1)
+            default_future["predicted_progress_30_days"] = min(98.0, round(current_pct + 15, 1))
+        return {
+            "dna": default_dna,
+            "future_self": default_future,
+            "insights": default_insights
+        }
+        
+    # Calculate DNA
+    # 1. Most common emotion
+    emotions = [j["emotion"] for j in journals]
+    most_common_emotion = max(set(emotions), key=emotions.count).capitalize()
+    
+    # 2. Average Focus & Durations
+    avg_focus = sum(j["study_plan"]["focus_score"] for j in journals) / len(journals)
+    avg_study = sum(j["study_plan"]["study_duration"] for j in journals) / len(journals)
+    avg_break = sum(j["study_plan"]["break_duration"] for j in journals) / len(journals)
+    
+    # 3. Best study time
+    hours = []
+    for j in journals:
+        try:
+            hour = int(j["created_at"].split("T")[1].split(":")[0])
+            hours.append(hour)
+        except Exception:
+            pass
+    avg_hour = sum(hours) / len(hours) if hours else 12
+    if avg_hour < 12:
+        best_time = "Morning"
+    elif avg_hour < 17:
+        best_time = "Afternoon"
+    else:
+        best_time = "Evening"
+        
+    # 4. Learning style matching
+    methods = [j["study_plan"]["learning_method"] for j in journals]
+    dominant_method = max(set(methods), key=methods.count)
+    learning_style = "Active Recall & Feynman"
+    if "Mind Mapping" in dominant_method:
+        learning_style = "Visual Learner"
+    elif "SQ3R" in dominant_method:
+        learning_style = "Structural Learner"
+    elif "Flashcards" in dominant_method:
+        learning_style = "Spaced Repetition"
+        
+    # 5. Productive / Weakest Subjects
+    most_productive_subject = "Biology"
+    weakest_subject = "Mathematics"
+    # Find subject prioritized when focus is highest
+    sorted_by_focus = sorted(journals, key=lambda x: x["study_plan"]["focus_score"], reverse=True)
+    if sorted_by_focus and sorted_by_focus[0]["study_plan"]["priority_subjects"]:
+        most_productive_subject = sorted_by_focus[0]["study_plan"]["priority_subjects"][0]
+    # Find subject prioritized when focus is lowest
+    sorted_by_focus_asc = sorted(journals, key=lambda x: x["study_plan"]["focus_score"])
+    if sorted_by_focus_asc and sorted_by_focus_asc[0]["study_plan"]["priority_subjects"]:
+        weakest_subject = sorted_by_focus_asc[0]["study_plan"]["priority_subjects"][0]
+    if most_productive_subject == weakest_subject:
+        weakest_subject = "Mathematics" if most_productive_subject != "Mathematics" else "Physics"
+        
+    dna = {
+        "learning_style": learning_style,
+        "best_time": best_time,
+        "most_productive_subject": most_productive_subject,
+        "weakest_subject": weakest_subject,
+        "most_common_emotion": most_common_emotion,
+        "average_focus": round(avg_focus, 1),
+        "optimal_study_time": int(avg_study),
+        "ideal_break": int(avg_break)
+    }
+    
+    # Calculate Future Self
+    completed_goals = sum(1 for g in goals if g["completed"])
+    current_progress = (completed_goals / len(goals)) * 100 if goals else 62.0
+    
+    # Estimate future stats based on consistency
+    avg_consistency = sum(j.get("consistency", 5) for j in journals) / len(journals)
+    predicted_progress = current_progress + (avg_consistency * 2.2)
+    predicted_progress = min(99.0, max(current_progress + 5.0, predicted_progress))
+    
+    avg_sleep = sum(j.get("sleep_hours", 7.0) for j in journals) / len(journals)
+    avg_distractions = sum(j.get("distractions", 2) for j in journals) / len(journals)
+    
+    stress_reduction = 15.0 + (avg_sleep * 3.5) - (avg_distractions * 2.0)
+    stress_reduction = max(5.0, min(50.0, stress_reduction))
+    
+    focus_improvement = "High Improvement" if avg_consistency >= 7.0 else "Moderate Improvement"
+    exam_readiness = "High" if avg_focus >= 75.0 else ("Moderate" if avg_focus >= 50.0 else "Low")
+    
+    future_self = {
+        "current_progress": round(current_progress, 1),
+        "predicted_progress_30_days": round(predicted_progress, 1),
+        "expected_stress_reduction": round(stress_reduction, 1),
+        "focus_improvement": focus_improvement,
+        "exam_readiness": exam_readiness
+    }
+    
+    # Calculate Insights
+    insights = []
+    
+    # Late night study detection
+    late_night_logs = 0
+    late_night_low_focus = 0
+    for j in journals:
+        try:
+            hour = int(j["created_at"].split("T")[1].split(":")[0])
+            if hour >= 22 or hour <= 3:
+                late_night_logs += 1
+                if j["study_plan"]["focus_score"] < 65:
+                    late_night_low_focus += 1
+        except Exception:
+            pass
+            
+    if late_night_low_focus >= 1:
+        insights.append("You consistently study after 10 PM. On these days, your Focus Index drops below 65%. Consider shifting your sessions to between 6 PM and 8 PM.")
+        
+    if avg_sleep < 6.0:
+        insights.append(f"Your average sleep duration is {round(avg_sleep, 1)} hours. This is heavily limiting your cognitive capacity. Try increasing sleep to 7.5 hours.")
+        
+    if avg_distractions > 4.0:
+        insights.append(f"Your average distraction index is high ({round(avg_distractions, 1)}/10). Minimizing distractions can boost your success probability by up to 15%.")
+        
+    if not insights:
+        insights.append("Your learning consistency is solid! Keep maintaining a fixed study schedule.")
+        insights.append("Focus score peaks when you take 10-minute active breaks. Keep up the good work.")
+        
+    return {
+        "dna": dna,
+        "future_self": future_self,
+        "insights": insights
+    }
+
 if __name__ == "__main__":
     import uvicorn
     uvicorn.run("main:app", host="0.0.0.0", port=8000, reload=True)
+

@@ -1,7 +1,8 @@
 import React, { useState, useEffect } from "react";
 import { 
   Smile, Frown, Sparkles, Brain, CheckSquare, Plus, Trash2, 
-  Mic, Clock, AlertTriangle, Coffee, BookOpen, Heart, RefreshCw, Volume2 
+  Mic, Clock, AlertTriangle, Coffee, BookOpen, Heart, RefreshCw, Volume2,
+  Sliders, Activity, ShieldAlert
 } from "lucide-react";
 
 const METHOD_EXPLAINERS = {
@@ -93,6 +94,18 @@ export default function Dashboard({ token, showNotification }) {
   const [goals, setGoals] = useState([]);
   const [newGoal, setNewGoal] = useState("");
   const [isAddingGoal, setIsAddingGoal] = useState(false);
+
+  // Multivariate Coach Inputs
+  const [hoursStudied, setHoursStudied] = useState(2);
+  const [sleepHours, setSleepHours] = useState(7);
+  const [upcomingExams, setUpcomingExams] = useState(0);
+  const [moodRating, setMoodRating] = useState(4);
+  const [consistency, setConsistency] = useState(7);
+  const [distractions, setDistractions] = useState(2);
+
+  // Coach Profile States (Study DNA / Future Self / Insights)
+  const [coachProfile, setCoachProfile] = useState(null);
+  const [isLoadingProfile, setIsLoadingProfile] = useState(true);
   
   // Quick Sample Prompts for ease of testing
   const samplePrompts = [
@@ -119,8 +132,26 @@ export default function Dashboard({ token, showNotification }) {
     }
   };
 
+  // Fetch Coach Profile (Study DNA, Projections, Insights)
+  const fetchCoachProfile = async () => {
+    try {
+      const res = await fetch(`${API_URL}/coach/profile`, {
+        headers: { Authorization: `Bearer ${token}` }
+      });
+      if (res.ok) {
+        const data = await res.json();
+        setCoachProfile(data);
+      }
+    } catch (err) {
+      console.error("Failed to fetch coach profile:", err);
+    } finally {
+      setIsLoadingProfile(false);
+    }
+  };
+
   useEffect(() => {
     fetchGoals();
+    fetchCoachProfile();
   }, [token]);
 
   // Handle Journal Submission
@@ -142,13 +173,23 @@ export default function Dashboard({ token, showNotification }) {
           "Content-Type": "application/json",
           Authorization: `Bearer ${token}`
         },
-        body: JSON.stringify({ text: textToAnalyze })
+        body: JSON.stringify({
+          text: textToAnalyze,
+          hours_studied: Number(hoursStudied),
+          sleep_hours: Number(sleepHours),
+          upcoming_exams: Number(upcomingExams),
+          mood_rating: Number(moodRating),
+          consistency: Number(consistency),
+          distractions: Number(distractions)
+        })
       });
 
       if (res.ok) {
         const data = await res.json();
         setAnalysisResult(data);
         showNotification(`Mood analyzed: ${getEmotionEmoji(data.emotion)} ${capitalize(data.emotion)}!`, "success");
+        // Update Coach Profile and insights in real time!
+        fetchCoachProfile();
       } else {
         const errData = await res.json();
         showNotification(errData.detail || "Analysis failed", "error");
@@ -361,6 +402,108 @@ export default function Dashboard({ token, showNotification }) {
               </div>
             </div>
 
+            {/* Coach Inputs Panel */}
+            <div className="mt-6 border-t border-gray-100 dark:border-gray-800 pt-6 space-y-4">
+              <h3 className="text-sm font-bold text-gray-800 dark:text-gray-200 font-outfit uppercase tracking-wider flex items-center gap-2">
+                <Sliders className="w-4 h-4 text-indigo-500" />
+                Daily Habits (AI Study Coach Inputs)
+              </h3>
+              
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Hours Studied */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="font-semibold text-gray-500">Hours Studied Today</span>
+                    <span className="font-bold text-indigo-500">{hoursStudied} hrs</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="12"
+                    step="0.5"
+                    value={hoursStudied}
+                    onChange={(e) => setHoursStudied(parseFloat(e.target.value))}
+                    className="w-full h-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 appearance-none cursor-pointer accent-indigo-500"
+                  />
+                </div>
+
+                {/* Sleep Hours */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="font-semibold text-gray-500">Sleep Duration</span>
+                    <span className="font-bold text-indigo-500">{sleepHours} hrs</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="3"
+                    max="10"
+                    step="0.5"
+                    value={sleepHours}
+                    onChange={(e) => setSleepHours(parseFloat(e.target.value))}
+                    className="w-full h-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 appearance-none cursor-pointer accent-indigo-500"
+                  />
+                </div>
+
+                {/* Distractions Index */}
+                <div className="space-y-1">
+                  <div className="flex justify-between text-xs">
+                    <span className="font-semibold text-gray-500">Distractions Level</span>
+                    <span className="font-bold text-indigo-500">{distractions}/10</span>
+                  </div>
+                  <input
+                    type="range"
+                    min="0"
+                    max="10"
+                    value={distractions}
+                    onChange={(e) => setDistractions(parseInt(e.target.value))}
+                    className="w-full h-1.5 rounded-lg bg-gray-100 dark:bg-gray-800 appearance-none cursor-pointer accent-indigo-500"
+                  />
+                </div>
+
+                {/* Mood Dropdown */}
+                <div className="space-y-1">
+                  <label className="block text-[11px] font-bold text-gray-400 uppercase">Mood Rating</label>
+                  <select
+                    value={moodRating}
+                    onChange={(e) => setMoodRating(parseInt(e.target.value))}
+                    className="w-full text-xs font-semibold rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 p-2 text-gray-900 dark:text-white focus:outline-none"
+                  >
+                    <option value="5">Excellent (5/5)</option>
+                    <option value="4">Good (4/5)</option>
+                    <option value="3">Neutral (3/5)</option>
+                    <option value="2">Low (2/5)</option>
+                    <option value="1">Bad (1/5)</option>
+                  </select>
+                </div>
+
+                {/* Consistency */}
+                <div className="space-y-1">
+                  <label className="block text-[11px] font-bold text-gray-400 uppercase">Consistency (1-10)</label>
+                  <input
+                    type="number"
+                    min="1"
+                    max="10"
+                    value={consistency}
+                    onChange={(e) => setConsistency(parseInt(e.target.value))}
+                    className="w-full text-xs font-semibold rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 p-2 text-gray-900 dark:text-white focus:outline-none"
+                  />
+                </div>
+
+                {/* Upcoming Exams */}
+                <div className="space-y-1">
+                  <label className="block text-[11px] font-bold text-gray-400 uppercase">Upcoming Exams</label>
+                  <input
+                    type="number"
+                    min="0"
+                    max="10"
+                    value={upcomingExams}
+                    onChange={(e) => setUpcomingExams(parseInt(e.target.value))}
+                    className="w-full text-xs font-semibold rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-950 p-2 text-gray-900 dark:text-white focus:outline-none"
+                  />
+                </div>
+              </div>
+            </div>
+
             {/* Submit button */}
             <div className="mt-5 flex justify-end">
               <button
@@ -386,6 +529,14 @@ export default function Dashboard({ token, showNotification }) {
           {/* Analysis output Section */}
           {analysisResult && (
             <div className="space-y-6">
+              {/* Cognitive Fatigue / Stop Warning */}
+              {analysisResult.study_plan.stop_warning && (
+                <div className="p-4 rounded-2xl bg-rose-50 dark:bg-rose-950/20 border border-rose-200 dark:border-rose-800 text-rose-600 dark:text-rose-400 text-xs font-semibold flex items-center gap-3 animate-pulse">
+                  <ShieldAlert className="w-5 h-5 flex-shrink-0 text-rose-500" />
+                  <span>{analysisResult.study_plan.stop_warning}</span>
+                </div>
+              )}
+
               {/* Emotion Indicator Header */}
               <div className={`p-6 rounded-3xl border flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4 ${getEmotionColor(analysisResult.emotion)}`}>
                 <div className="flex items-center gap-4">
@@ -438,29 +589,43 @@ export default function Dashboard({ token, showNotification }) {
                   </div>
                 </div>
 
-                {/* Exercises & Scores */}
+                {/* AI Coach Diagnostics */}
                 <div className="glass-card rounded-3xl p-6 border space-y-4">
                   <h4 className="text-lg font-bold text-gray-900 dark:text-white font-outfit flex items-center gap-2">
-                    <Coffee className="w-5 h-5 text-amber-500" />
-                    Mindfulness & Exercises
+                    <Activity className="w-5 h-5 text-indigo-500" />
+                    AI Coach Diagnostics
                   </h4>
-                  <div className="p-4 rounded-2xl bg-amber-50/50 dark:bg-amber-950/10 border border-amber-100 dark:border-amber-950">
-                    <div className="text-xs font-bold text-amber-700 dark:text-amber-400 uppercase tracking-wider">Relaxation Method</div>
-                    <p className="text-sm text-gray-700 dark:text-gray-300 mt-1 font-medium">
-                      {analysisResult.study_plan.relaxation_exercise}
-                    </p>
-                  </div>
-                  <div className="grid grid-cols-2 gap-4">
-                    <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800 text-center">
-                      <div className="text-xs text-gray-400">Focus Index</div>
-                      <div className="text-xl font-black text-gray-900 dark:text-white mt-1">
-                        {analysisResult.study_plan.focus_score}/100
-                      </div>
+                  <div className="space-y-3">
+                    <div className="flex justify-between border-b border-gray-100 dark:border-gray-800 pb-2 text-sm">
+                      <span className="text-gray-500">Burnout Risk</span>
+                      <span className={`font-bold px-2 py-0.5 rounded-lg text-xs ${
+                        analysisResult.study_plan.burnout_risk === "High" ? "text-rose-600 bg-rose-50 dark:bg-rose-950/20" :
+                        analysisResult.study_plan.burnout_risk === "Moderate" ? "text-amber-600 bg-amber-50 dark:bg-amber-950/20" :
+                        "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/20"
+                      }`}>
+                        {analysisResult.study_plan.burnout_risk}
+                      </span>
                     </div>
-                    <div className="p-3 rounded-xl bg-gray-50 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800 text-center">
-                      <div className="text-xs text-gray-400">Productivity Est.</div>
-                      <div className="text-xl font-black text-gray-900 dark:text-white mt-1">
-                        {analysisResult.study_plan.productivity_score}%
+                    <div className="flex justify-between border-b border-gray-100 dark:border-gray-800 pb-2 text-sm">
+                      <span className="text-gray-500">Today's Success Probability</span>
+                      <span className="font-extrabold text-gray-900 dark:text-white">
+                        {analysisResult.study_plan.success_probability}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between border-b border-gray-100 dark:border-gray-800 pb-2 text-sm">
+                      <span className="text-gray-500">Focus Index</span>
+                      <span className="font-extrabold text-gray-900 dark:text-white">
+                        {analysisResult.study_plan.focus_score}/100
+                      </span>
+                    </div>
+                    <div className="space-y-1">
+                      <span className="text-xs font-semibold text-gray-400 uppercase tracking-wider block">Priority Subjects Today</span>
+                      <div className="flex flex-wrap gap-1.5 mt-1">
+                        {analysisResult.study_plan.priority_subjects.map((sub, idx) => (
+                          <span key={idx} className="text-xs px-2.5 py-1 rounded-xl bg-indigo-50 dark:bg-indigo-950/40 text-indigo-600 dark:text-indigo-400 font-semibold">
+                            {sub}
+                          </span>
+                        ))}
                       </div>
                     </div>
                   </div>
@@ -613,6 +778,102 @@ export default function Dashboard({ token, showNotification }) {
               </div>
             )}
           </div>
+
+          {/* Study DNA Card */}
+          {coachProfile && (
+            <div className="glass-card rounded-3xl p-6 shadow-sm border space-y-4 animate-fade-in">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-2xl bg-indigo-100 dark:bg-indigo-950/30 text-indigo-500">
+                  <Brain className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white font-outfit">Your Study DNA</h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Personalized profile based on your logs.</p>
+                </div>
+              </div>
+
+              <div className="grid grid-cols-2 gap-3 pt-2">
+                <div className="p-3 rounded-2xl bg-gray-50 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800">
+                  <div className="text-[10px] text-gray-400 uppercase tracking-wider">Learning Style</div>
+                  <div className="text-xs font-bold text-gray-900 dark:text-white mt-0.5">{coachProfile.dna.learning_style}</div>
+                </div>
+                <div className="p-3 rounded-2xl bg-gray-50 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800">
+                  <div className="text-[10px] text-gray-400 uppercase tracking-wider">Best Time</div>
+                  <div className="text-xs font-bold text-gray-900 dark:text-white mt-0.5">{coachProfile.dna.best_time}</div>
+                </div>
+                <div className="p-3 rounded-2xl bg-gray-50 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800">
+                  <div className="text-[10px] text-gray-400 uppercase tracking-wider">Productive Subject</div>
+                  <div className="text-xs font-bold text-emerald-600 dark:text-emerald-400 mt-0.5">{coachProfile.dna.most_productive_subject}</div>
+                </div>
+                <div className="p-3 rounded-2xl bg-gray-50 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800">
+                  <div className="text-[10px] text-gray-400 uppercase tracking-wider">Weakest Subject</div>
+                  <div className="text-xs font-bold text-rose-500 mt-0.5">{coachProfile.dna.weakest_subject}</div>
+                </div>
+                <div className="p-3 rounded-2xl bg-gray-50 dark:bg-gray-800/40 border border-gray-100 dark:border-gray-800 col-span-2">
+                  <div className="text-[10px] text-gray-400 uppercase tracking-wider">Most Common Emotion</div>
+                  <div className="text-xs font-bold text-gray-900 dark:text-white mt-0.5">{coachProfile.dna.most_common_emotion}</div>
+                </div>
+              </div>
+              <div className="p-3.5 rounded-2xl bg-indigo-50/50 dark:bg-indigo-950/10 border border-indigo-100 dark:border-indigo-900 text-[11px] text-indigo-700 dark:text-indigo-400 leading-relaxed font-medium">
+                💡 Optimal study session is <b>{coachProfile.dna.optimal_study_time} mins</b> with a <b>{coachProfile.dna.ideal_break} min</b> break.
+              </div>
+            </div>
+          )}
+
+          {/* Future Self Projection Card */}
+          {coachProfile && (
+            <div className="glass-card rounded-3xl p-6 shadow-sm border space-y-4 animate-fade-in">
+              <div className="flex items-center gap-3">
+                <div className="p-2.5 rounded-2xl bg-emerald-100 dark:bg-emerald-950/30 text-emerald-500">
+                  <Activity className="w-6 h-6" />
+                </div>
+                <div>
+                  <h2 className="text-xl font-bold text-gray-900 dark:text-white font-outfit">Future Self (30 Days)</h2>
+                  <p className="text-xs text-gray-500 dark:text-gray-400">Projection if you maintain current habits.</p>
+                </div>
+              </div>
+
+              <div className="space-y-3">
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-500">Current Progress</span>
+                  <span className="font-bold text-gray-900 dark:text-white">{coachProfile.future_self.current_progress}%</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-500">Projected (30 Days)</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">{coachProfile.future_self.predicted_progress_30_days}%</span>
+                </div>
+                <div className="flex justify-between text-xs border-b border-gray-100 dark:border-gray-800 pb-2">
+                  <span className="text-gray-500">Expected Stress Reduction</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">-{coachProfile.future_self.expected_stress_reduction}%</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-500">Focus Potential</span>
+                  <span className="font-bold text-gray-900 dark:text-white">{coachProfile.future_self.focus_improvement}</span>
+                </div>
+                <div className="flex justify-between text-xs">
+                  <span className="text-gray-500">Exam Readiness</span>
+                  <span className="font-bold text-emerald-600 dark:text-emerald-400">{coachProfile.future_self.exam_readiness}</span>
+                </div>
+              </div>
+            </div>
+          )}
+
+          {/* Coach Insights Panel */}
+          {coachProfile && coachProfile.insights && (
+            <div className="glass-card rounded-3xl p-6 shadow-sm border space-y-3 animate-fade-in">
+              <h4 className="text-xs font-bold text-amber-600 dark:text-amber-400 uppercase tracking-wider flex items-center gap-2">
+                <Sparkles className="w-4 h-4" /> Coach Pattern Insights
+              </h4>
+              <ul className="space-y-2">
+                {coachProfile.insights.map((insight, idx) => (
+                  <li key={idx} className="text-xs text-gray-600 dark:text-gray-300 leading-relaxed flex items-start gap-2">
+                    <span className="w-1.5 h-1.5 rounded-full bg-amber-500 mt-1.5 flex-shrink-0" />
+                    {insight}
+                  </li>
+                ))}
+              </ul>
+            </div>
+          )}
         </div>
 
       </div>
