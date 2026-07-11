@@ -168,9 +168,7 @@ export default function App() {
             
             {/* Logo Header */}
             <div className="text-center space-y-2">
-              <div className="inline-flex p-3 rounded-2xl bg-primary-500 text-white shadow-lg shadow-primary-500/20">
-                <Brain className="w-8 h-8" />
-              </div>
+              <img src="/favicon.png" alt="MindMentor Logo" className="inline-flex w-16 h-16 object-contain rounded-2xl mx-auto" />
               <h2 className="text-2xl font-black font-outfit text-gray-900 dark:text-white mt-3">
                 MindMentor AI
               </h2>
@@ -267,9 +265,7 @@ export default function App() {
                 
                 {/* Logo */}
                 <div className="flex items-center gap-2">
-                  <div className="p-2 rounded-xl bg-primary-500 text-white shadow-md shadow-primary-500/20">
-                    <Brain className="w-5 h-5" />
-                  </div>
+                  <img src="/favicon.png" alt="MindMentor Logo" className="w-8 h-8 object-contain rounded-xl" />
                   <span className="font-extrabold text-lg tracking-tight font-outfit text-gray-900 dark:text-white">
                     MindMentor AI
                   </span>
