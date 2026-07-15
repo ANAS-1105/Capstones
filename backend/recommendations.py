@@ -91,6 +91,23 @@ def generate_study_plan(
         
     success_probability = int(max(15, min(98, success_probability)))
     
+    # 3.5. Stress Level Calculation
+    base_stress = {
+        "stressed": 85,
+        "anxious": 75,
+        "burned_out": 70,
+        "confused": 55,
+        "calm": 25,
+        "motivated": 30
+    }.get(emotion, 50)
+    
+    exam_stress = upcoming_exams * 10
+    sleep_stress = max(0.0, 6.0 - sleep_hours) * 8.0
+    distraction_stress = distractions * 2.0
+    
+    stress_level = int(base_stress + exam_stress + sleep_stress + distraction_stress)
+    stress_level = max(10, min(98, stress_level))
+    
     # 4. Best Study & Break Durations
     if burnout_risk == "High":
         study_duration = 15
@@ -198,5 +215,6 @@ def generate_study_plan(
         "burnout_risk": burnout_risk,
         "success_probability": success_probability,
         "priority_subjects": priority_subjects,
-        "stop_warning": stop_warning
+        "stop_warning": stop_warning,
+        "stress_level": stress_level
     }

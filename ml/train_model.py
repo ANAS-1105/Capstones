@@ -7,7 +7,7 @@ from sklearn.linear_model import LogisticRegression
 from sklearn.metrics import classification_report, accuracy_score
 
 def main():
-    base_dir = "d:\\PROJECT capstone\\MindMentor-AI"
+    base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
     csv_path = os.path.join(base_dir, "dataset", "emotion_data.csv")
     
     if not os.path.exists(csv_path):

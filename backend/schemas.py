@@ -47,6 +47,7 @@ class StudyPlan(BaseModel):
     success_probability: int
     priority_subjects: List[str]
     stop_warning: Optional[str] = None
+    stress_level: int
 
 class JournalOut(BaseModel):
     id: str = Field(..., alias="_id")

@@ -107,7 +107,8 @@ data = [
 ]
 
 # Write to CSV
-dataset_dir = os.path.join("d:\\PROJECT capstone\\MindMentor-AI", "dataset")
+base_dir = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+dataset_dir = os.path.join(base_dir, "dataset")
 os.makedirs(dataset_dir, exist_ok=True)
 csv_path = os.path.join(dataset_dir, "emotion_data.csv")
 

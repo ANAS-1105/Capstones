@@ -607,6 +607,16 @@ export default function Dashboard({ token, showNotification }) {
                       </span>
                     </div>
                     <div className="flex justify-between border-b border-gray-100 dark:border-gray-800 pb-2 text-sm">
+                      <span className="text-gray-500">Stress Level</span>
+                      <span className={`font-bold px-2 py-0.5 rounded-lg text-xs ${
+                        (analysisResult.study_plan.stress_level ?? 45) > 70 ? "text-rose-600 bg-rose-50 dark:bg-rose-950/20" :
+                        (analysisResult.study_plan.stress_level ?? 45) > 40 ? "text-amber-600 bg-amber-50 dark:bg-amber-950/20" :
+                        "text-emerald-600 bg-emerald-50 dark:bg-emerald-950/20"
+                      }`}>
+                        {analysisResult.study_plan.stress_level ?? 45}%
+                      </span>
+                    </div>
+                    <div className="flex justify-between border-b border-gray-100 dark:border-gray-800 pb-2 text-sm">
                       <span className="text-gray-500">Today's Success Probability</span>
                       <span className="font-extrabold text-gray-900 dark:text-white">
                         {analysisResult.study_plan.success_probability}%
