@@ -53,6 +53,12 @@ data = [
     ("My brain refuses to cooperate. I am completely depleted.", "burned_out"),
     ("I am sick of studying. I need a massive break from school.", "burned_out"),
     ("I feel totally disengaged and tired of all these endless exams.", "burned_out"),
+    ("I feel so dull today, nothing seems interesting.", "burned_out"),
+    ("Everything feels dull and boring. I have no drive to study.", "burned_out"),
+    ("I am feeling dull and empty inside. Just exhausted.", "burned_out"),
+    ("Studying feels so monotonous and dull. I can't focus.", "burned_out"),
+    ("My mind is feeling dull and lazy. I have no energy.", "burned_out"),
+    ("I feel extremely dull, uninspired, and sluggish today.", "burned_out"),
 
     # Confused
     ("I don't understand this physics chapter at all. The formulas make no sense.", "confused"),
