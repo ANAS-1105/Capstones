@@ -19,6 +19,8 @@ data = [
     ("Ready to learn! Let's get through this study plan.", "motivated"),
     ("I'm feeling positive about my exams and excited to prepare.", "motivated"),
     ("Crushed my goals today, feeling awesome and eager for tomorrow.", "motivated"),
+    ("I am feeling good and ready to study.", "motivated"),
+    ("Feeling good and ready to get top marks today.", "motivated"),
 
     # Stressed
     ("I have three assignments due this week. I keep trying to study, but I can't focus and I feel overwhelmed.", "stressed"),
@@ -36,6 +38,7 @@ data = [
     ("My schedule is packed and I have no breathing room. Feeling highly stressed.", "stressed"),
     ("I have to submit this project in two hours and nothing is working.", "stressed"),
     ("I feel completely overloaded with homework and chores.", "stressed"),
+    ("Things are not going good. I feel so overwhelmed.", "stressed"),
 
     # Burned Out
     ("I am so tired. I have no energy to study and I just want to sleep for days.", "burned_out"),
@@ -59,6 +62,9 @@ data = [
     ("Studying feels so monotonous and dull. I can't focus.", "burned_out"),
     ("My mind is feeling dull and lazy. I have no energy.", "burned_out"),
     ("I feel extremely dull, uninspired, and sluggish today.", "burned_out"),
+    ("I am not feeling good today. Everything is hard.", "burned_out"),
+    ("I'm not doing well, feel very down and tired.", "burned_out"),
+    ("Not feeling good at all. Brain is exhausted.", "burned_out"),
 
     # Confused
     ("I don't understand this physics chapter at all. The formulas make no sense.", "confused"),
@@ -93,6 +99,9 @@ data = [
     ("Taking a slow study session today. Feeling serene and content.", "calm"),
     ("I'm in a good headspace. Calm, focused, and ready to learn.", "calm"),
     ("Everything is under control. Feeling very relaxed and steady.", "calm"),
+    ("I am feeling good, calm, and relaxed.", "calm"),
+    ("Everything is going fine and I am feeling good.", "calm"),
+    ("Taking a quiet study session, feeling good.", "calm"),
 
     # Anxious
     ("I am so worried about my final grades. I can't stop thinking about failing.", "anxious"),
@@ -109,7 +118,8 @@ data = [
     ("The thought of public speaking in class makes me feel so anxious and scared.", "anxious"),
     ("I am worried sick about this grading scale. I feel so apprehensive.", "anxious"),
     ("I feel restless and anxious, my hands are sweaty, and I can't concentrate.", "anxious"),
-    ("What if I fail this semester? I feel so nervous and anxious about the outcome.", "anxious")
+    ("What if I fail this semester? I feel so nervous and anxious about the outcome.", "anxious"),
+    ("I don't feel good. I'm too anxious to study.", "anxious")
 ]
 
 # Write to CSV
