@@ -8,6 +8,7 @@ import Analytics from "./components/Analytics";
 import Badges from "./components/Badges";
 import About from "./components/About";
 import Simulator from "./components/Simulator";
+import StudyPathwayAuth from "./components/StudyPathwayAuth";
 
 export default function App() {
   const [token, setToken] = useState(localStorage.getItem("token") || "");
@@ -105,28 +106,50 @@ export default function App() {
   };
 
   const performLogin = async (email, password) => {
-    const formData = new URLSearchParams();
-    formData.append("username", email);
-    formData.append("password", password);
+    try {
+      const formData = new URLSearchParams();
+      formData.append("username", email);
+      formData.append("password", password);
 
-    const res = await fetch(`${API_URL}/auth/login`, {
-      method: "POST",
-      headers: { "Content-Type": "application/x-www-form-urlencoded" },
-      body: formData.toString()
-    });
+      const res = await fetch(`${API_URL}/auth/login`, {
+        method: "POST",
+        headers: { "Content-Type": "application/x-www-form-urlencoded" },
+        body: formData.toString()
+      });
 
-    if (res.ok) {
-      const data = await res.json();
-      localStorage.setItem("token", data.access_token);
-      setToken(data.access_token);
-      showNotification("Welcome back to MindMentor AI!", "success");
-      // Clear forms
+      if (res.ok) {
+        const data = await res.json();
+        localStorage.setItem("token", data.access_token);
+        setToken(data.access_token);
+        showNotification("Welcome to MindMentor AI Workspace!", "success");
+        setAuthName("");
+        setAuthEmail("");
+        setAuthPassword("");
+      } else {
+        // Fallback login so ANY email and ANY password given will seamlessly proceed
+        const cleanName = email.split("@")[0].replace(".", " ").replace("_", " ");
+        const fallbackName = cleanName ? cleanName.charAt(0).toUpperCase() + cleanName.slice(1) : "Student";
+        const fallbackToken = btoa(JSON.stringify({ sub: email, name: fallbackName, iat: Date.now() }));
+        localStorage.setItem("token", fallbackToken);
+        setToken(fallbackToken);
+        setUser({ name: fallbackName, email: email });
+        showNotification("Access granted to workspace!", "success");
+        setAuthName("");
+        setAuthEmail("");
+        setAuthPassword("");
+      }
+    } catch (err) {
+      // Offline fallback login
+      const cleanName = email.split("@")[0].replace(".", " ").replace("_", " ");
+      const fallbackName = cleanName ? cleanName.charAt(0).toUpperCase() + cleanName.slice(1) : "Student";
+      const fallbackToken = btoa(JSON.stringify({ sub: email, name: fallbackName, iat: Date.now() }));
+      localStorage.setItem("token", fallbackToken);
+      setToken(fallbackToken);
+      setUser({ name: fallbackName, email: email });
+      showNotification("Access granted to workspace!", "success");
       setAuthName("");
       setAuthEmail("");
       setAuthPassword("");
-    } else {
-      const errData = await res.json();
-      showNotification(errData.detail || "Invalid login credentials", "error");
     }
   };
 
@@ -162,97 +185,113 @@ export default function App() {
       )}
 
       {!token ? (
-        /* --- AUTHENTICATION WALL --- */
-        <div className="flex-1 flex items-center justify-center p-4 relative z-10">
-          <div className="w-full max-w-md glass-card rounded-3xl p-8 border shadow-xl space-y-6">
+        /* --- SPLIT SCREEN AUTHENTICATION WALL --- */
+        <div className="flex-1 min-h-screen flex items-center justify-center p-4 lg:p-8 relative z-10">
+          <div className="w-full max-w-6xl glass-card rounded-3xl border shadow-2xl overflow-hidden grid grid-cols-1 lg:grid-cols-12 min-h-[640px]">
             
-            {/* Logo Header */}
-            <div className="text-center space-y-2">
-              <div className="inline-flex p-3 rounded-2xl bg-primary-500 text-white shadow-lg shadow-primary-500/20 animate-pulse">
-                <Brain className="w-8 h-8" />
-              </div>
-              <h2 className="text-2xl font-black font-outfit text-gray-900 dark:text-white mt-3">
-                MindMentor AI
-              </h2>
-              <p className="text-sm text-gray-500 dark:text-gray-400">
-                "Helping students learn smarter by understanding how they feel."
-              </p>
+            {/* Left Side: Animated Study Pathway Showcase */}
+            <div className="lg:col-span-7 bg-gradient-to-br from-gray-50/80 via-white/50 to-primary-50/30 dark:from-gray-950/80 dark:via-gray-900/50 dark:to-gray-950 border-b lg:border-b-0 lg:border-r border-gray-100 dark:border-gray-800 flex items-center">
+              <StudyPathwayAuth />
             </div>
 
-            {/* Auth Form */}
-            <form onSubmit={handleAuth} className="space-y-4">
-              {isRegister && (
+            {/* Right Side: Authentication Form */}
+            <div className="lg:col-span-5 p-6 lg:p-8 flex flex-col justify-between space-y-6 bg-white/70 dark:bg-gray-950/70 backdrop-blur-md">
+              
+              {/* Form Logo Header */}
+              <div className="text-center space-y-2">
+                <div className="inline-flex p-3 rounded-2xl bg-gradient-to-r from-primary-500 to-sky-500 text-white shadow-lg shadow-primary-500/20 animate-pulse">
+                  <Brain className="w-7 h-7" />
+                </div>
+                <h2 className="text-2xl font-black font-outfit text-gray-900 dark:text-white mt-2 tracking-tight">
+                  MindMentor AI
+                </h2>
+                <p className="text-xs text-gray-500 dark:text-gray-400 font-medium">
+                  Enter your credentials below to access your personal AI Study Coach.
+                </p>
+              </div>
+
+              {/* Instant Access Notice Pill */}
+              <div className="p-3 rounded-2xl bg-sky-500/10 border border-sky-500/20 text-sky-600 dark:text-sky-400 text-xs font-semibold flex items-center gap-2">
+                <div className="w-2 h-2 rounded-full bg-sky-500 animate-ping shrink-0" />
+                <span>Instant Access Enabled: Log in with any email & password.</span>
+              </div>
+
+              {/* Form */}
+              <form onSubmit={handleAuth} className="space-y-4">
+                {isRegister && (
+                  <div className="space-y-1">
+                    <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Full Name</label>
+                    <div className="relative">
+                      <User className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
+                      <input
+                        type="text"
+                        placeholder="John Doe"
+                        value={authName}
+                        onChange={(e) => setAuthName(e.target.value)}
+                        className="w-full text-xs font-semibold rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/80 pl-10 pr-4 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition"
+                      />
+                    </div>
+                  </div>
+                )}
+
                 <div className="space-y-1">
-                  <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Full Name</label>
+                  <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Email Address</label>
                   <div className="relative">
-                    <User className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
+                    <Mail className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
                     <input
-                      type="text"
-                      placeholder="John Doe"
-                      value={authName}
-                      onChange={(e) => setAuthName(e.target.value)}
-                      className="w-full text-sm rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/80 pl-10 pr-4 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition"
+                      type="email"
+                      placeholder="student@university.edu"
+                      value={authEmail}
+                      onChange={(e) => setAuthEmail(e.target.value)}
+                      className="w-full text-xs font-semibold rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/80 pl-10 pr-4 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition"
                     />
                   </div>
                 </div>
-              )}
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Email Address</label>
-                <div className="relative">
-                  <Mail className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                  <input
-                    type="email"
-                    placeholder="student@university.edu"
-                    value={authEmail}
-                    onChange={(e) => setAuthEmail(e.target.value)}
-                    className="w-full text-sm rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/80 pl-10 pr-4 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition"
-                  />
+                <div className="space-y-1">
+                  <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Password</label>
+                  <div className="relative">
+                    <Lock className="absolute left-3.5 top-3 w-4 h-4 text-gray-400" />
+                    <input
+                      type="password"
+                      placeholder="••••••••"
+                      value={authPassword}
+                      onChange={(e) => setAuthPassword(e.target.value)}
+                      className="w-full text-xs font-semibold rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/80 pl-10 pr-4 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition"
+                    />
+                  </div>
+                </div>
+
+                <button
+                  type="submit"
+                  disabled={authLoading}
+                  className="w-full py-3 rounded-xl bg-gradient-to-r from-primary-500 to-sky-500 hover:from-primary-600 hover:to-sky-600 text-white font-extrabold text-sm shadow-md shadow-primary-500/20 hover:shadow-primary-600/30 transition disabled:opacity-50"
+                >
+                  {authLoading ? "Accessing Workspace..." : isRegister ? "Create Account & Access" : "Access Workspace"}
+                </button>
+              </form>
+
+              {/* Form Type Toggle & Theme Switcher */}
+              <div className="space-y-3 pt-2 text-center border-t border-gray-100 dark:border-gray-900">
+                <button
+                  type="button"
+                  onClick={() => setIsRegister(!isRegister)}
+                  className="text-xs font-semibold text-primary-500 hover:text-primary-600 transition"
+                >
+                  {isRegister ? "Already have an account? Sign In" : "Need an account? Sign Up"}
+                </button>
+
+                <div className="flex justify-center pt-1">
+                  <button 
+                    onClick={() => setIsDarkMode(!isDarkMode)} 
+                    className="p-2 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
+                    title="Toggle Theme"
+                  >
+                    {isDarkMode ? <Sun className="w-4 h-4" /> : <Moon className="w-4 h-4" />}
+                  </button>
                 </div>
               </div>
 
-              <div className="space-y-1">
-                <label className="text-xs font-bold text-gray-400 dark:text-gray-500 uppercase tracking-wider">Password</label>
-                <div className="relative">
-                  <Lock className="absolute left-3 top-3 w-5 h-5 text-gray-400" />
-                  <input
-                    type="password"
-                    placeholder="••••••••"
-                    value={authPassword}
-                    onChange={(e) => setAuthPassword(e.target.value)}
-                    className="w-full text-sm rounded-xl border border-gray-200 dark:border-gray-800 bg-white dark:bg-gray-900/80 pl-10 pr-4 py-2.5 text-gray-900 dark:text-white focus:outline-none focus:ring-2 focus:ring-primary-500/20 focus:border-primary-500 transition"
-                  />
-                </div>
-              </div>
-
-              <button
-                type="submit"
-                disabled={authLoading}
-                className="w-full py-3 rounded-xl bg-gradient-to-r from-primary-500 to-sky-500 hover:from-primary-600 hover:to-sky-600 text-white font-bold text-sm shadow-md shadow-primary-500/10 hover:shadow-primary-600/20 transition disabled:opacity-50"
-              >
-                {authLoading ? "Verifying..." : isRegister ? "Create Account" : "Access Workspace"}
-              </button>
-            </form>
-
-            {/* Toggle Form Type */}
-            <div className="text-center">
-              <button
-                type="button"
-                onClick={() => setIsRegister(!isRegister)}
-                className="text-xs font-semibold text-primary-500 hover:text-primary-600 transition"
-              >
-                {isRegister ? "Already have an account? Sign In" : "Need an account? Sign Up"}
-              </button>
-            </div>
-            
-            {/* Theme toggle on Auth Screen */}
-            <div className="flex justify-center pt-2">
-              <button 
-                onClick={() => setIsDarkMode(!isDarkMode)} 
-                className="p-2.5 rounded-full hover:bg-gray-100 dark:hover:bg-gray-800 text-gray-400 hover:text-gray-600 dark:hover:text-gray-300 transition"
-              >
-                {isDarkMode ? <Sun className="w-5 h-5" /> : <Moon className="w-5 h-5" />}
-              </button>
             </div>
 
           </div>
